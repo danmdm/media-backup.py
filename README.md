@@ -79,24 +79,6 @@ Implicit: `%Y_%m_%d_%H_%M_%S` → `2024_08_10_15_30_45.jpg`
 
 ---
 
-## 💡 Exemple practice
-
-    # Poze din 2012 - plimbare cu bicicleta
-    cd ~/Pictures/Poze/Anul\ 2012/
-    python3 ~/media_backup.py . /media/backup/Poze/ -e plimbare-bicicleta
-
-    # Backup săptămânal automat
-    DATE=$(date +%Y_%m_%d)
-    python3 ~/media_backup.py ~/Pictures ~/Videos /media/backup/ -l "backup_$DATE.log"
-
----
-
-## 🛠️ Depanare
-
-    sudo apt install exiftool imagemagick ffmpeg
-    chmod +x media_backup.py
-
----
 
 ## 📄 Licență
 
