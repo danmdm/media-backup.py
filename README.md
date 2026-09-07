@@ -79,11 +79,4 @@ Implicit: `%Y_%m_%d_%H_%M_%S` → `2024_08_10_15_30_45.jpg`
 
 ---
 
-
-## 📄 Licență
-
-MIT License
-
----
-
 **Creat cu ❤️ pentru organizarea pozelor și videoclipurilor**
