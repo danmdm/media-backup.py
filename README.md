@@ -1,124 +1,92 @@
-# ============================================
-# MEDIA BACKUP SCRIPT
-# ============================================
+Media Backup Script
 
-Script Python pentru backup automat de poze si videoclipuri.
+Script Python pentru backup automat de poze și videoclipuri cu detectare duplicate.
+Funcționalități
 
+    Detectare duplicate prin hash MD5
 
-# ============================================
-# FUNCȚIONALITĂȚI
-# ============================================
+    Extragere data din EXIF (poze) și metadata (video)
 
-- Detectare duplicate prin hash MD5
-- Extragere data din EXIF (poze) si metadata (video)
-- Adaugare evenimente la numele fisierelor
-- Organizare automata in backup
-- Log detaliat (optional)
-- Filtrare: doar poze sau doar videoclipuri
-- Pastrare nume originale (optional)
+    Adăugare evenimente la numele fișierelor (--event)
 
+    Organizare automată în backup
 
-# ============================================
-# DEPENDINȚE
-# ============================================
+    Log detaliat (opțional)
+
+    Filtrare: doar poze sau doar videoclipuri
+
+    Păstrare nume originale (opțional)
+
+Dependințe
+text
 
 sudo apt install exiftool imagemagick ffmpeg python3
 
+Utilizare
+text
 
-# ============================================
-# UTILIZARE
-# ============================================
+# Backup simplu
+python3 media_backup.py ~/Pictures ~/BackupMedia
 
-COMENZI DE BAZĂ:
+# Backup cu eveniment
+python3 media_backup.py ~/Pictures ~/BackupMedia --event plimbare-bicicleta
 
-  Backup simplu:
-    python3 media_backup.py ~/Pictures ~/BackupMedia
+# Backup cu eveniment + log
+python3 media_backup.py ~/Pictures ~/BackupMedia -e "gratar-munte" -l backup.log
 
-  Backup cu eveniment:
-    python3 media_backup.py ~/Pictures ~/BackupMedia --event plimbare-bicicleta
+# Format personalizat
+python3 media_backup.py ~/Pictures ~/BackupMedia -e vacanta -f "%Y_%m_%d"
 
-  Backup cu eveniment + log:
-    python3 media_backup.py ~/Pictures ~/BackupMedia -e "gratar-munte" -l backup.log
+# Doar poze
+python3 media_backup.py ~/Pictures ~/BackupMedia --photos-only
 
-  Format personalizat:
-    python3 media_backup.py ~/Pictures ~/BackupMedia -e vacanta -f "%Y_%m_%d"
+# Doar videoclipuri
+python3 media_backup.py ~/Videos ~/BackupMedia --videos-only
 
-  Doar poze:
-    python3 media_backup.py ~/Pictures ~/BackupMedia --photos-only
+# Păstrează numele originale
+python3 media_backup.py ~/Pictures ~/BackupMedia --keep-original-names
 
-  Doar videoclipuri:
-    python3 media_backup.py ~/Videos ~/BackupMedia --videos-only
+# Mod verbose
+python3 media_backup.py ~/Pictures ~/BackupMedia -v
 
-  Pastreaza numele originale:
-    python3 media_backup.py ~/Pictures ~/BackupMedia --keep-original-names
-
-  Mod verbose (detalii):
-    python3 media_backup.py ~/Pictures ~/BackupMedia -v
-
-
-# ============================================
-# ARGUMENTE
-# ============================================
-
-  paths                    Surse si destinatie (ultimul argument)
-  -e, --event              Adauga eveniment la numele fisierelor
-  -f, --date-format        Format data personalizat
-  -l, --log                Salveaza log intr-un fisier
-  -v, --verbose            Afiseaza detalii
-  -k, --keep-original-names Pastreaza numele originale
-  --photos-only            Doar poze
-  --videos-only            Doar videoclipuri
-
-
-# ============================================
-# FORMAT DATĂ
-# ============================================
+Argumente
+Argument	Descriere
+paths	Surse și destinație (ultimul argument)
+-e, --event	Adaugă eveniment la numele fișierelor
+-f, --date-format	Format dată personalizat
+-l, --log	Salvează log într-un fișier
+-v, --verbose	Afișează detalii
+-k, --keep-original-names	Păstrează numele originale
+--photos-only	Doar poze
+--videos-only	Doar videoclipuri
+Format dată
 
 Implicit: %Y_%m_%d_%H_%M_%S -> 2024_08_10_15_30_45.jpg
+Format	Rezultat
+%Y_%m_%d	2024_08_10.jpg
+%Y-%m-%d	2024-08-10.jpg
+%d_%m_%Y	10_08_2024.jpg
+%Y%m%d	20240810.jpg
+%B_%Y	August_2024.jpg
+Exemple practice
+text
 
-Alte formate:
-  %Y_%m_%d        -> 2024_08_10.jpg
-  %Y-%m-%d        -> 2024-08-10.jpg
-  %d_%m_%Y        -> 10_08_2024.jpg
-  %Y%m%d          -> 20240810.jpg
-  %B_%Y           -> August_2024.jpg
+# Poze din 2012 - plimbare cu bicicleta
+cd ~/Pictures/Poze/Anul\ 2012/
+python3 ~/media_backup.py . /media/backup/Poze/ -e plimbare-bicicleta
 
+# Backup săptămânal automat
+DATE=$(date +%Y_%m_%d)
+python3 ~/media_backup.py ~/Pictures ~/Videos /media/backup/ -l "backup_$DATE.log"
 
-# ============================================
-# EXEMPLE PRACTICE
-# ============================================
+Depanare
+text
 
-Poze din 2012 - plimbare cu bicicleta:
-  cd ~/Pictures/Poze/Anul\ 2012/
-  python3 ~/media_backup.py . /media/backup/Poze/ -e plimbare-bicicleta
+sudo apt install exiftool imagemagick ffmpeg
+chmod +x media_backup.py
 
-Poze din 2012 - gratar la munte:
-  cd ~/Pictures/Poze/Anul\ 2012/
-  python3 ~/media_backup.py . /media/backup/Poze/ -e gratar-munte
+Licență
 
-Backup saptamanal automat:
-  #!/bin/bash
-  DATE=$(date +%Y_%m_%d)
-  python3 ~/media_backup.py ~/Pictures ~/Videos /media/backup/ -l "backup_$DATE.log"
+MIT
 
-
-# ============================================
-# DEPANARE
-# ============================================
-
-  sudo apt install exiftool
-  sudo apt install imagemagick
-  sudo apt install ffmpeg
-  chmod +x media_backup.py
-
-
-# ============================================
-# LICENȚĂ
-# ============================================
-
-MIT License
-
-
-# ============================================
-# CREAT CU ❤️ PENTRU ORGANIZAREA POZELOR
-# ============================================
+Creat cu ❤️ pentru organizarea pozelor și videoclipurilor
