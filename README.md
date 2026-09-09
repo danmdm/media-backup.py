@@ -6,13 +6,13 @@ Script Python pentru backup automat de poze și videoclipuri.
 
 ## ✨ Funcționalități
 
-- 🔍 Detectare duplicate prin hash MD5
-- 📸 Extragere data din EXIF (poze) și metadata (video)
-- 🏷️ Adăugare evenimente la numele fișierelor (`--event`)
-- 📁 Organizare automată în backup
-- 📝 Log detaliat (opțional)
-- 🎯 Filtrare: doar poze sau doar videoclipuri
-- 🔄 Păstrare nume originale (opțional)
+✅ Copiază sau mută poze și videoclipuri din mai multe directoare sursă
+🔍 Detectează duplicatele folosind hash MD5
+📅 Redenumește fișierele folosind data din EXIF (DateTimeOriginal) sau data de modificare
+🏷️ Suportă adăugarea unui nume de eveniment la fișiere
+📝 Opțiune de log pentru fișierele sărite (duplicate)
+🎯 Filtrare: doar poze sau doar videoclipuri
+🔄 Păstrare nume originale (opțional)
 
 ---
 
@@ -23,31 +23,45 @@ Script Python pentru backup automat de poze și videoclipuri.
 ---
 
 ## 🚀 Utilizare
+python3 media_backup.py sursa1 sursa2 ... destinatie [opțiuni]
 
-    # Backup simplu
-    python3 media_backup.py ~/Pictures ~/BackupMedia
+Exemple
 
-    # Backup cu eveniment
-    python3 media_backup.py ~/Pictures ~/BackupMedia --event plimbare-bicicleta
+Copiere poze dintr-un singur director:
 
-    # Backup cu eveniment + log
-    python3 media_backup.py ~/Pictures ~/BackupMedia -e "gratar-munte" -l backup.log
+python3 media_backup.py ~/Pictures ~/BackupMedia
 
-    # Format personalizat
-    python3 media_backup.py ~/Pictures ~/BackupMedia -e vacanta -f "%Y_%m_%d"
+Copiere din mai multe directoare:
 
-    # Doar poze
-    python3 media_backup.py ~/Pictures ~/BackupMedia --photos-only
+python3 media_backup.py ~/Pictures ~/Downloads/photos /media/usb ~/BackupMedia
 
-    # Doar videoclipuri
-    python3 media_backup.py ~/Videos ~/BackupMedia --videos-only
+Mutare (șterge fișierele din sursă după copiere):
 
-    # Păstrează numele originale
-    python3 media_backup.py ~/Pictures ~/BackupMedia --keep-original-names
+python3 media_backup.py ~/Pictures ~/BackupMedia --move
 
-    # Mod verbose
-    python3 media_backup.py ~/Pictures ~/BackupMedia -v
+Adăugare eveniment la numele fișierelor:
 
+python3 media_backup.py ~/Pictures ~/BackupMedia --event plimbare-bicicleta
+
+Log pentru fișierele sărite:
+
+python3 media_backup.py ~/Pictures ~/BackupMedia --log backup.log
+
+Doar poze:
+
+python3 media_backup.py ~/Pictures ~/BackupMedia --photos-only
+
+Doar videoclipuri:
+
+python3 media_backup.py ~/Videos ~/BackupMedia --videos-only
+
+Păstrează numele originale:
+
+python3 media_backup.py ~/Pictures ~/BackupMedia --keep-original-names
+
+Mod verbose:
+
+python3 media_backup.py ~/Pictures ~/BackupMedia -v
 ---
 
 ## 📋 Argumente
