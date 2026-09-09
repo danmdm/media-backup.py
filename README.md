@@ -135,3 +135,5 @@ Indexul nu se salvează în modul `--dry-run`.
 ---
 
 Creat cu ❤️ pentru organizarea pozelor și videoclipurilor
+<img width="2058" height="616" alt="image" src="https://github.com/user-attachments/assets/391c2a7a-fa28-419b-8f3c-711cc7aad280" />
+
