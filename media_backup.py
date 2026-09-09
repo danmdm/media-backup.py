@@ -16,12 +16,13 @@ from datetime import datetime
 import logging
 
 class MediaBackup:
-    def __init__(self, source_dirs, backup_dir, log_file=None, verbose=False, event=None):
+    def __init__(self, source_dirs, backup_dir, log_file=None, verbose=False, event=None, move=False):
         self.source_dirs = [Path(d) for d in source_dirs]
         self.backup_dir = Path(backup_dir)
         self.verbose = verbose
         self.log_file = log_file
         self.event = event  # Evenimentul de adăugat
+        self.move = move  # True = mută, False = copiază (implicit)
         
         # Extensii pentru poze
         self.photo_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', 
@@ -64,7 +65,7 @@ class MediaBackup:
         self.skipped_files = []  # Listă în memorie pentru fișierele sărite
         self.stats = {'photos': 0, 'videos': 0, 'exif_date': 0, 
                      'video_metadata': 0, 'file_date': 0, 'current_date': 0,
-                     'skipped': 0, 'copied': 0}
+                     'skipped': 0, 'copied': 0, 'moved': 0}
     
     def check_ffprobe(self):
         """Verifică dacă ffprobe este disponibil"""
@@ -188,7 +189,8 @@ class MediaBackup:
     def generate_filename(self, file_path, media_date):
         """Generează numele fișierului bazat pe dată și eveniment"""
         extension = file_path.suffix.lower()
-        base_name = media_date.strftime("%Y_%m_%d_%H_%M_%S")
+        # Format implicit: YYYY_mm_dd_HHMMSS
+        base_name = media_date.strftime("%Y_%m_%d_%H%M%S")
         
         # Dacă avem eveniment, îl adăugăm la nume
         if self.event:
@@ -227,17 +229,24 @@ class MediaBackup:
         logging.info(f"Găsite {file_count} fișiere media în backup")
     
     def backup_media(self):
-        """Realizează backup-ul fișierelor media"""
+        """Realizează backup-ul fișierelor media (copiere sau mutare)"""
         self.scan_existing_backup()
         self.backup_dir.mkdir(parents=True, exist_ok=True)
         
         total_copied = 0
         total_skipped = 0
         total_errors = 0
+        total_moved = 0
         
         # Afișează evenimentul dacă există
         if self.event:
             logging.info(f"🏷️  Eveniment adăugat: {self.event}")
+        
+        # Afișează modul de operare
+        if self.move:
+            logging.info("📦 Mod: MUTARE (fișierele vor fi mutate din sursă)")
+        else:
+            logging.info("📋 Mod: COPIERE (fișierele rămân în sursă)")
         
         for source_dir in self.source_dirs:
             if not source_dir.exists():
@@ -282,9 +291,20 @@ class MediaBackup:
                     # Determină data
                     media_date = self.get_media_date(file_path)
                     
-                    # Generează nume și copiază
+                    # Generează nume
                     dest_name, dest_path = self.generate_filename(file_path, media_date)
-                    shutil.copy2(file_path, dest_path)
+                    
+                    # Copiază sau mută fișierul
+                    if self.move:
+                        shutil.move(str(file_path), str(dest_path))
+                        operation = "Mutat"
+                        total_moved += 1
+                        self.stats['moved'] += 1
+                    else:
+                        shutil.copy2(file_path, dest_path)
+                        operation = "Copiat"
+                        total_copied += 1
+                        self.stats['copied'] += 1
                     
                     # Actualizează hash-urile
                     self.existing_hashes[file_hash] = dest_path
@@ -292,12 +312,9 @@ class MediaBackup:
                     # Logging
                     icon = "📷" if file_path.suffix.lower() in self.photo_extensions else "🎬"
                     if self.verbose:
-                        logging.info(f"{icon} {file_path.name} -> {dest_name} ({media_date.strftime('%Y-%m-%d %H:%M:%S')})")
+                        logging.info(f"{icon} {operation}: {file_path.name} -> {dest_name} ({media_date.strftime('%Y-%m-%d %H:%M:%S')})")
                     else:
-                        logging.info(f"{icon} {file_path.name} -> {dest_name}")
-                    
-                    total_copied += 1
-                    self.stats['copied'] += 1
+                        logging.info(f"{icon} {operation}: {file_path.name} -> {dest_name}")
                     
                 except Exception as e:
                     logging.error(f"Eroare la {file_path}: {e}")
@@ -307,7 +324,11 @@ class MediaBackup:
         logging.info("=" * 60)
         logging.info("BACKUP COMPLETAT")
         logging.info(f"📷 Poze: {self.stats['photos']}, 🎬 Videoclipuri: {self.stats['videos']}")
-        logging.info(f"✅ Copiate: {total_copied}, ⏭️  Sărite: {total_skipped}, ❌ Erori: {total_errors}")
+        
+        if self.move:
+            logging.info(f"📦 Mutate: {total_moved}, ⏭️  Sărite: {total_skipped}, ❌ Erori: {total_errors}")
+        else:
+            logging.info(f"✅ Copiate: {total_copied}, ⏭️  Sărite: {total_skipped}, ❌ Erori: {total_errors}")
         
         if self.event:
             logging.info(f"🏷️  Eveniment: {self.event}")
@@ -358,23 +379,20 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Exemple:
-  # Backup simplu (fără fișiere de log)
+  # Backup simplu (copiere)
   python3 media_backup.py ~/Pictures ~/Videos ~/BackupMedia
 
-  # Cu fișier de log (include și fișierele sărite)
-  python3 media_backup.py ~/Pictures ~/BackupMedia --log backup.log
+  # Mutare (șterge din sursă)
+  python3 media_backup.py ~/Pictures ~/BackupMedia --move
 
-  # Mod verbose
-  python3 media_backup.py ~/Pictures ~/Videos ~/BackupMedia -v
+  # Cu eveniment și mutare
+  python3 media_backup.py ~/Pictures ~/BackupMedia --move --event plimbare-bicicleta
+
+  # Cu log
+  python3 media_backup.py ~/Pictures ~/BackupMedia --log backup.log
 
   # Doar poze
   python3 media_backup.py ~/Pictures ~/BackupMedia --photos-only
-
-  # Adaugă eveniment la toate fișierele
-  python3 media_backup.py ~/Pictures ~/BackupMedia --event plimbare-bicicleta
-
-  # Adaugă eveniment cu format personalizat
-  python3 media_backup.py ~/Pictures ~/BackupMedia --event "vacanta-2024" --date-format "%Y_%m_%d"
         """
     )
     
@@ -384,13 +402,15 @@ Exemple:
                        help='Mod verbose')
     parser.add_argument('--log', '-l', 
                        help='Fișier de log (opțional)')
+    parser.add_argument('--move', '-m', action='store_true',
+                       help='Mută fișierele în loc să le copieze')
     parser.add_argument('--photos-only', action='store_true', 
                        help='Procesează doar poze')
     parser.add_argument('--videos-only', action='store_true', 
                        help='Procesează doar videoclipuri')
     parser.add_argument('--keep-original-names', '-k', action='store_true',
                        help='Păstrează numele originale ale fișierelor')
-    parser.add_argument('--date-format', '-f', default="%Y_%m_%d_%H_%M_%S",
+    parser.add_argument('--date-format', '-f', default="%Y_%m_%d_%H%M%S",
                        help='Format dată personalizat')
     parser.add_argument('--event', '-e',
                        help='Adaugă un eveniment la numele fișierelor (ex: --event plimbare-bicicleta)')
@@ -409,7 +429,7 @@ Exemple:
         if Path(src).resolve() == backup_path:
             parser.error(f"Destinația '{backup_dir}' nu poate fi și sursă!")
     
-    backup = MediaBackup(source_dirs, backup_dir, log_file=args.log, verbose=args.verbose, event=args.event)
+    backup = MediaBackup(source_dirs, backup_dir, log_file=args.log, verbose=args.verbose, event=args.event, move=args.move)
     
     # Aplică filtre
     if args.photos_only:
@@ -428,7 +448,7 @@ Exemple:
                 counter += 1
             return dest_path.name, dest_path
         backup.generate_filename = keep_names
-    elif args.date_format != "%Y_%m_%d_%H_%M_%S" or args.event:
+    elif args.date_format != "%Y_%m_%d_%H%M%S" or args.event:
         # Dacă avem eveniment sau format personalizat, suprascriem funcția
         def custom_format(file_path, media_date):
             extension = file_path.suffix.lower()
