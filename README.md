@@ -11,9 +11,13 @@ Script Python pentru backup automat de poze și videoclipuri.
 🔍 Detectează duplicatele folosind hash MD5. 
 
 📅 Redenumește fișierele folosind data din EXIF (DateTimeOriginal) sau data de modificare
+
 🏷️ Suportă adăugarea unui nume de eveniment la fișiere
+
 📝 Opțiune de log pentru fișierele sărite (duplicate)
+
 🎯 Filtrare: doar poze sau doar videoclipuri
+
 🔄 Păstrare nume originale (opțional)
 
 ---
